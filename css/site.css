@@ -1,0 +1,437 @@
+html,
+body {
+    height: 100%;
+}
+
+/* Barra de rolagem */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment  {
+    display: none;
+}
+ 
+::-webkit-scrollbar-track-piece  {
+    background-color: #fff;
+    -webkit-border-radius: 3px;
+}
+ 
+::-webkit-scrollbar-thumb:vertical {
+    background-color: #888;
+    -webkit-border-radius: 3px;
+}
+
+.wrap > .container h1{
+    font-size: 20px;
+    color: #214769;
+    margin: 0 0 10px 0;
+    border-left: 5px solid #214769;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.wrap > .container h2{
+    font-size: 16px;
+    color: #214769;
+    margin: 0 0 10px 0;
+    border-left: 5px solid #214769;
+    padding: 5px 20px;
+    margin: 20px 0;
+}
+
+.wrap {
+    min-height: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.wrap > .container {
+    padding: 50px 15px 20px;
+}
+
+.wrap > .containerMapa {
+    padding-top: 50px;
+    width: 100%;
+    height: 100%;
+}
+
+#loginTitle{
+    text-align: center;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+.wrap > .containerLogin {
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+    background: #0E2F44;
+}
+
+.wrap > .containerLogin > .central{
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    margin: auto;
+    height: 600px;
+    padding: 0px;
+}
+
+img.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#containerFormLogin {
+    margin: 0 auto;
+    padding: 20px 50px;
+    width: 370px;
+    background: #FFF;
+    border-radius: 5px;
+    border: #82939b solid 1px;
+}
+
+#containerFormLogin > h1 {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#containerFormLogin .col-xs-12 {
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #13293D;
+    border-color: #13293D;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    color: #fff;
+    background-color: #214769;
+    border-color: #214769;
+}
+
+#btn-login {
+    padding:6px 135px;
+    width: 300px;
+}
+
+.error-summary {
+    width: 300px;
+    color: #a94442;
+    background: #fdf7f7;
+    border-left: 3px solid #eed3d7;
+    padding: 10px 20px;
+    margin: 0 0 15px 0;
+}
+
+.navbar-inverse {
+    background-color: #E4E9ED;
+    border-color: #82939b;
+}
+
+.navbar-inverse .navbar-text, .navbar-inverse .navbar-text:hover {
+    color: #777;
+    cursor: default;
+}
+
+.navbar-inverse .navbar-nav > li > a, .navbar-inverse .btn-link {
+    color: #000;
+}
+
+.navbar-inverse .btn-link:hover, .navbar-inverse .btn-link:focus {
+    color: #777;
+    text-decoration: none;
+}
+
+.navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+    color: #fff;
+    background-color: #13293D;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+    color: #777;
+    background-color: transparent;
+}
+
+.dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
+    color: #fff;
+    text-decoration: none;
+    background-color: #13293D;
+    outline: 0;
+}
+
+.footer {
+    height: 60px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.jumbotron {
+    text-align: center;
+    background-color: transparent;
+}
+
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+
+.not-set {
+    color: #c55;
+    font-style: italic;
+}
+
+/* add sorting icons to gridview sort links */
+a.asc:after, a.desc:after {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    padding-left: 5px;
+}
+
+a.asc:after {
+    content: /*"\e113"*/ "\e151";
+}
+
+a.desc:after {
+    content: /*"\e114"*/ "\e152";
+}
+
+.sort-numerical a.asc:after {
+    content: "\e153";
+}
+
+.sort-numerical a.desc:after {
+    content: "\e154";
+}
+
+.sort-ordinal a.asc:after {
+    content: "\e155";
+}
+
+.sort-ordinal a.desc:after {
+    content: "\e156";
+}
+
+.grid-view th {
+    white-space: nowrap;
+}
+
+.hint-block {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+}
+
+.error-summary {
+    color: #a94442;
+    background: #fdf7f7;
+    border-left: 3px solid #eed3d7;
+    padding: 10px 20px;
+    margin: 0 0 15px 0;
+}
+
+.tabela {
+    text-align: center;
+    overflow: hidden;
+    background: #E4E9ED;
+    border-collapse: separate;
+    border: 1px solid #82939b;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
+}
+
+.tabela th {
+    text-align: center;
+    background: #214769;
+    color: #fff;
+}
+
+.pagination.pagination > .active > a, 
+.pagination > .active > span, 
+.pagination > .active > a:hover, 
+.pagination > .active > span:hover, 
+.pagination > .active > a:focus, 
+.pagination > .active > span:focus {
+    background-color: #214769;
+    border-color: #214769;
+    border-width: 1px;
+}
+
+.pagination > li > a,
+.pagination > li > a:hover, 
+.pagination > li > span, 
+.pagination > .disabled > span, 
+.pagination > .disabled > span:hover, 
+.pagination > .disabled > span:focus, 
+.pagination > .disabled > a, 
+.pagination > .disabled > a:hover, 
+.pagination > .disabled > a:focus {
+    color: #000;
+    border-color: #82939b;
+}
+
+.container-preencher-ocorrencia {
+    padding: 15px 15px;
+    text-align: left;
+    overflow: hidden;
+    background: #E4E9ED;
+    border-collapse: separate;
+    border: 1px solid #82939b;
+    -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+            border-radius: 5px;
+}
+
+div.ui-datepicker{
+    width: 269px; //262
+    height: 230px; //218
+}
+
+#painel-flutuante-alertas {
+    
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    //bottom: 20px;
+    max-height: 700px;
+    z-index: 5;
+    background-color: #fff;
+    padding: 0px;
+    //border: 1px solid #82939b;
+    border-radius: 5px;
+    text-align: left;
+    width: 260px;
+    overflow: auto;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#painel-flutuante-alertas > div {
+    margin: 5px;
+    padding: 7px;
+    border-radius: 5px;
+    cursor: default;
+    background: #fff;
+}
+
+/* Imagem do marcador */
+#painel-flutuante-alertas > div > table > tr > td:first-child {
+    background: #afbdc5; //#214769; //#E4E9ED;
+    width: 50px;
+    //height: 50px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#painel-flutuante-alertas > div > table > tr > td:last-child {
+    //background: #888;
+    width: 175px;
+    border-radius: 5px;
+    text-align: left;
+    padding-left: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: inline-block;
+    font-size: 11px;
+    line-height: 110%;
+}
+
+#painel-flutuante-alertas > div > table > tr > td:last-child::first-line {
+    font-size: 14px;
+}
+
+#painel-flutuante-alertas > hr {
+    margin: 0;
+    padding: 0;
+}
+
+#painel-flutuante-alertas > div:hover {
+    background-color: #E4E9ED;
+}
+
+/* Alinhamento do conteÃºdos dos infowindows */
+.gm-style-iw {
+    text-align: center;
+}
+
+#debug {
+    color: #fff;
+    width: 400px; 
+    height: 700px; 
+    background: #2e2e2e;
+    position: absolute;
+    top: 70px;
+    left: 20px;
+    z-index: 5;
+    padding: 0px;
+    border: 1px solid #2e2e2e;
+    border-radius: 5px;
+    text-align: left;
+    padding: 15px;
+    overflow: auto;
+    opacity: 0.8;
+}
+
+/* Div que comporta o formulÃ¡rio */
+#painel-preencher-ocorrencia {
+   
+    position: absolute;
+    top: 70px;
+    left: 20px;
+    z-index: 5;
+    background-color: red;
+    //border: 0px solid #82939b;
+    border-radius: 5px;
+    text-align: center;
+    overflow: auto;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+/* FormulÃ¡rio */
+#painel-preencher-ocorrencia > .container {
+    width: 260px;
+    background: #fff;
+    margin: 0px;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+/* IdentificaÃ§Ã£o (Nome, telefone, vÃ­nculo) */
+#painel-preencher-ocorrencia > .container > div:nth-child(1) {
+    color: #fff;
+    background: #13293D;
+    margin: -15px -15px 15px -15px;
+    padding: 15px;
+}
+
+#painel-preencher-ocorrencia > .container > div:nth-child(1) > p1 {
+    font-size: 17px;
+}
+
+#painel-preencher-ocorrencia > .container > div:nth-child(1) > p2 {
+    font-size: 13px;
+}
+
+#painel-preencher-ocorrencia > .container > div:nth-child(1) > p3 {
+    font-size: 13px;
+    font-style: italic;
+}

@@ -1,0 +1,6 @@
+2017/08/31 00:37:13 [warning] [application] Failed to set unsafe attribute "login" of "LoginForm".
+in C:\wamp64\www\alertaUfes\web\protected\controllers\SiteController.php (92)
+in C:\wamp64\www\alertaUfes\web\index.php (13)
+2017/08/31 00:37:32 [warning] [application] Failed to set unsafe attribute "login" of "LoginForm".
+in C:\wamp64\www\alertaUfes\web\protected\controllers\SiteController.php (92)
+in C:\wamp64\www\alertaUfes\web\index.php (13)
