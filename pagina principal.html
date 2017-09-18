@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    
+    <!-- google maps -->
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://maps.google.com/maps/api/js?v=3.2&sensor=false&libraries=visualization"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    
+    <!-- favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="csrf-param" content="_csrf">
+    <meta name="csrf-token" content="eDlDVS1ibGQIQy0jVDMGJwJjKRofLV4QF3A3AVoXFSsrSXMRHg07HA==">
+    
+    <title>Monitor</title>
+    
+    <link href="/web/assets/1664b04c/css/bootstrap.css" rel="stylesheet">
+<link href="/web/css/site.css" rel="stylesheet">
+</head>
+
+<body>
+    
+
+<div class="wrap">
+    <nav id="w0" class="navbar-inverse navbar-fixed-top navbar" role="navigation"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#w0-collapse"><span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span></button><a class="navbar-brand" href="/web/index.php"><img src="../web/images/logo2.png" alt="" style="margin-top: -18px"></a></div><div id="w0-collapse" class="collapse navbar-collapse"><p class="navbar-text">Daniel Ribeiro Favoreto - Goiabeiras</p><ul id="w1" class="navbar-nav navbar-right nav"><li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown">Gerenciar <b class="caret"></b></a><ul id="w2" class="dropdown-menu"><li><a href="/web/index.php?r=usuario%2Findex" tabindex="-1">Usuários</a></li>
+<li><a data-toggle="modal" data-target="#modalConfiguracoesSistema" style="cursor: pointer;">Configurações</a></li></ul></li>
+<li><a data-toggle="modal" data-target="#modalConfiguracoesUsuario" style="cursor: pointer;">Minhas Preferências</a></li>
+<li class="dropdown"><a class="dropdown-toggle" href="#" data-toggle="dropdown">Relatórios <b class="caret"></b></a><ul id="w3" class="dropdown-menu"><li><a href="/web/index.php?r=relatorio%2Fgeral" tabindex="-1">Geral</a></li>
+<li class="divider"></li>
+<li class="dropdown-header" style="cursor:default;">Personalizados</li>
+<li><a href="/web/index.php?r=relatorio%2Falertas-por-periodo" tabindex="-1">Alertas por Período</a></li></ul></li>
+<li><a href="/web/index.php?r=usuario%2Fusuarios-bloqueados">Bloqueios</a></li>
+<li style="margin-top:8px;"><form action="/web/index.php?r=site%2Flogout" method="post">
+<input type="hidden" name="_csrf" value="eDlDVS1ibGQIQy0jVDMGJwJjKRofLV4QF3A3AVoXFSsrSXMRHg07HA=="><button type="submit" class="btn btn-link">Sair</button></form></li></ul></div></div></nav>
+    
+<div class="containerMapa" id="containerMapa">
+    
+    <!-- Div usada para visualizar o conteúdo dos arrays -->
+    <div id="debug" hidden></div>
+    
+    <!-- Div usada para comportar o painel de preenchimento de ocorrencias -->
+    <div id="painel-preencher-ocorrencia"></div>
+    
+    <!-- Div usada para comportar o painel flutuante de alertas -->
+    <div id="painel-flutuante-alertas" hidden></div>
+    
+    <!-- Div utilizada para comportar o mapa renderizado -->
+    <div id="map"></div>
+
+    <!-- Audio executado quando um novo Alerta for recebido -->
+    <audio id="audio"><source src="audio/alert.mp3" type="audio/mp3" /></audio>
+    
+    <script type="text/javascript">
+        
+        /* 
+         * Array de propriedades dos possíveis status de um Alerta.
+         * Aqui são armazendas informações como endereço da imagem do ícone do marcador,
+         * sombra do ícone do marcador, label que é exibido para identificar o status e 
+         * animação do marcador.
+         * 
+         * Possíveis status:
+         * 0 - Novo Alerta (Esse status existe para que o áudio seja executado apenas para novos Markers)
+         * 1 - Localização aproximada
+         * 2 - Localização exata
+         * 3 - Atendido
+         */
+        var propriedadesStatus = {
+            0: {
+                icon: 'images/mark-blue.png',
+                shadow: 'images/shadow.png',
+                label: '<span class="label label-primary">Novo</span>',
+                labelSimples: "Novo",
+                animation: google.maps.Animation.BOUNCE
+            },
+            1: {
+                icon: 'images/mark-yellow.png',
+                shadow: 'images/shadow.png',
+                label: '<span class="label label-warning">Localização Aproximada</span>',
+                labelSimples: "Localização Aproximada",
+                animation: false
+            },
+            2: {
+                icon: 'images/mark-red.png',
+                shadow: 'images/shadow.png',
+                label: '<span class="label label-danger">Localização Exata</span>',
+                labelSimples: "Localização Exata",
+                animation: false
+            },
+            3: {
+                icon: 'images/mark-green.png',
+                shadow: 'images/shadow.png',
+                label: '<span class="label label-success">Atendido</span>',
+                labelSimples: "Atendido",
+                animation: false
+            }
+        };
+        
+        // Popup dos Markers
+	var infoWindow = null;
+
+	// A visibilidade do mapa precisa estar global
+	var mapa = null;
+	
+        // Array global dos marcadores presentes no mapa
+	var markersArray = [];
+        
+        // Array temporário para comportar os ids de alertas atualizados
+        var markersArrayTemporario = [];
+        
+        // Cria o mapa e chama a função de atualização a cada intervalo definido em setInterval
+        function inicializarMapa() 
+        {
+            // Opções do mapa
+            var opcoesMapa = {
+                zoom : 16,
+                center : {lat: -20.277, lng: -40.304},
+                mapTypeId : google.maps.MapTypeId.SATELLITE,
+                zoomControl: false,
+                mapTypeControl: false,
+                scaleControl: false,
+                streetViewControl: false,
+                rotateControl: true,
+                rotateControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_BOTTOM
+                }
+            };
+            
+            // Cria uma instância do mapa
+            mapa = new google.maps.Map(document.getElementById("map"), opcoesMapa);
+            
+            /* 
+             * Define que um clique sobre o mapa (Mas não em um marker) fechará
+             * o painel de preenchimento de ocorrencia, fechará o infowindow aberto
+             * e desativará o alerta ativo no painel flutuante de alertas
+             */
+            mapa.addListener('click', function(){
+                desativarElementoNoPainelFlutuante();
+                fecharPainelPreencherOcorrencia();
+                infoWindow.close();
+            });
+            
+            // Cria uma instância para os popups dos Markers
+            infoWindow = new google.maps.InfoWindow;
+
+            // Realiza o load dos Markers no mapa
+            updateMaps();
+
+            // Intervalo de tempo em que os Markers devem ser atualizados
+            setInterval(updateMaps, 1000);
+	}
+
+        // Atualiza os Markers no mapa
+        function updateMaps() 
+        {
+            /* Quando chamamos um arquivo, o browser pode tomar a decisão
+             * de armazenar em cache. Se o browser utilizar cache, as próximas 
+             * requisições do mesmo recurso não batem no servidor.
+             *
+             * Definindo um modificador único para o arquivo de dados conseguimos "FORÇAR" 
+             * o browser a baixar novamente o arquivo.
+             *
+             * Por isto, utilizamos o parâmetro 't' no header do http para dizer NO-CACHE!!
+             */
+            var timestamp = new Date().getTime();
+            
+            // Recebe um Xml do controlador monitor
+            $.get("index.php?r=monitor/index", 
+                { 
+                    refresh: 1, 
+                    t: timestamp
+                }, 
+                function(data) 
+                { 
+                    // Para cada alerta obtido via ajax
+                    $(data).find("marker").each(
+                        function() 
+                        {
+                            // Dados do alerta obtidos via ajax (xml)
+                            var marker = $(this);
+                            var id = marker.attr("id");
+                            var lat = marker.attr("lat");
+                            var lng = marker.attr("lng");
+                            var data = marker.attr("data");
+                            var hora = marker.attr("hora");                            
+                            var nomePessoa = marker.attr("nomePessoa");
+                            var telefonePessoa = marker.attr("telefonePessoa");
+                            var status = marker.attr("status");
+                            var loginPessoa = marker.attr("loginPessoa");
+                            var vinculoPessoa = marker.attr("vinculoPessoa");
+                            var descricao = marker.attr("descricao");
+                            var resposta = marker.attr("resposta");
+                            var categoria = marker.attr("categoria");
+                            var campus = marker.attr("campus");
+                            var precisao = propriedadesStatus[status].label;
+                            var latlng = new google.maps.LatLng(parseFloat(marker.attr("lat")), parseFloat(marker.attr("lng")));
+                            var conteudoInfoWindow = formatarConteudoInfoWindow(nomePessoa, precisao, data, hora);
+                            
+                            // Recebe a instância do marcador no mapa, caso já exista
+                            var marcadorNoMapa = getMarcadorNoMapa(id);
+
+                            // Se o marcador do alerta já está no mapa
+                            if(marcadorNoMapa)
+                            {
+                                // Verifica se o status do alerta permaneceu o mesmo
+                                if(marcadorNoMapa.status === status)
+                                {
+                                    // printDebug("<font color='yellow'>Marcador no mapa com Status igual: </font>"+marcadorNoMapa.id);
+                                    
+                                    // Guarda o id no array temporário
+                                    markersArrayTemporario.push(id);
+                                }
+                                else
+                                {
+                                    // printDebug("<font color='pink'>Marcador no mapa com Status diferente: </font>"+marcadorNoMapa.id);
+
+                                    // Remove os ouvintes de evento do marcador
+                                    google.maps.event.clearInstanceListeners(marcadorNoMapa);
+                                    
+                                    // Remove o ouvinte de evento do elemento DOM
+                                    google.maps.event.clearInstanceListeners($('alertaNoPainel'+id));
+                                    
+                                    // Exclui a instância antiga do marcador no mapa
+                                    marcadorNoMapa.setMap(null);
+                                    
+                                    // Exclui a instância antiga do marcador do array de markers
+                                    removerMarcadorMarkersArray(marcadorNoMapa.id);
+                                    
+                                    // Cria uma nova instância para o marcador
+                                    var newMarker = new google.maps.Marker
+                                    ({
+                                        id: id,
+                                        lat: lat,
+                                        lng: lng,
+                                        data: data,
+                                        hora: hora,
+                                        nomePessoa: nomePessoa,
+                                        telefonePessoa: telefonePessoa,
+                                        status: status,
+                                        loginPessoa: loginPessoa,
+                                        vinculoPessoa: vinculoPessoa,
+                                        descricao: descricao,
+                                        resposta: resposta,
+                                        categoria: categoria,
+                                        campus: campus,
+                                        position: latlng,
+                                        map: mapa,
+                                        animation: propriedadesStatus[status].animation,
+                                        icon: propriedadesStatus[status].icon,
+                                        shadow: propriedadesStatus[status].shadow
+                                    });
+
+                                    // Altera o seu elemento no painel flutuante de alertas
+                                    alterarAlertaNoPainel(id, status);
+
+                                    // Define que um clique sobre o elemento DOM no painel flutuante abrirá uma infowindow para o marcador
+                                    google.maps.event.addDomListener(document.getElementById("alertaNoPainel"+id), 'click', function() {
+                                        if(!verificarSeAlertaEstaAtivoNoPainel(id))
+                                        {
+                                            desativarElementoNoPainelFlutuante();
+                                            fecharPainelPreencherOcorrencia();
+                                            infoWindow.close();
+                                        }
+                                        else
+                                        {
+                                            infoWindow.setContent(conteudoInfoWindow);
+                                            infoWindow.open(mapa, newMarker);
+                                            ativarElementoNoPainelFlutuante(id);
+                                            abrirPainelPreencherOcorrencia(id);
+                                        }
+                                        
+                                    });
+
+                                    // Define que um clique sobre um marcador abrirá uma InfoWindow
+                                    google.maps.event.addListener(newMarker, 'click', function() {
+                                        infoWindow.setContent(conteudoInfoWindow);
+                                        infoWindow.open(mapa, newMarker);
+                                        abrirPainelPreencherOcorrencia(id);
+                                        ativarElementoNoPainelFlutuante(id);
+                                    });
+
+                                    // Guarda uma referencia do marcador no array
+                                    markersArray.push(newMarker);
+
+                                    // Guarda o id no array temporário
+                                    markersArrayTemporario.push(id);
+                                }
+                            }
+                            // Se o marcador do alerta não está no mapa
+                            else
+                            {
+                                // printDebug("<font color='#00CCFF'>Marcador fora do mapa: </font>"+id);
+                                
+                                // Cria uma instância de um marcador no mapa
+                                var marker = new google.maps.Marker
+                                ({
+                                    id: id,
+                                    lat: lat,
+                                    lng: lng,
+                                    data: data,
+                                    hora: hora,
+                                    nomePessoa: nomePessoa,
+                                    telefonePessoa: telefonePessoa,
+                                    status: status,
+                                    loginPessoa: loginPessoa,
+                                    vinculoPessoa: vinculoPessoa,
+                                    descricao: descricao,
+                                    resposta: resposta,
+                                    categoria: categoria,
+                                    campus: campus,
+                                    position: latlng,
+                                    map: mapa,
+                                    animation: propriedadesStatus[status].animation,
+                                    icon: propriedadesStatus[status].icon,
+                                    shadow: propriedadesStatus[status].shadow
+                                });
+
+                                /*
+                                 * Insere informações no painel flutuante e guarda a referencia "alertaNoPainel" 
+                                 * que representa um alerta no painel, para que possa ser usado para chamar o evento
+                                 * de clique e disparar o infowindow no mapa
+                                 */ 
+                                var alertaNoPainel = criarAlertaNoPainel(id, hora, data, nomePessoa, telefonePessoa, status);
+                                
+                                /*
+                                 * Define que um clique sobre o elemento DOM no painel flutuante abrirá 
+                                 * uma infowindow e um painel de preenchimento de ocorrencia
+                                 */ 
+                                google.maps.event.addDomListener(alertaNoPainel, 'click', function() {
+                                    if(verificarSeAlertaEstaAtivoNoPainel(id))
+                                    {
+                                        desativarElementoNoPainelFlutuante();
+                                        fecharPainelPreencherOcorrencia();
+                                        infoWindow.close();
+                                    }
+                                    else
+                                    {
+                                        infoWindow.setContent(conteudoInfoWindow);
+                                        infoWindow.open(mapa, marker);
+                                        ativarElementoNoPainelFlutuante(id);
+                                        abrirPainelPreencherOcorrencia(id);
+                                    }
+                                });
+                                
+                                /*
+                                 * Define que um clique sobre o marcador abrirá 
+                                 * uma infowindow e um painel de preenchimento de ocorrencia
+                                 */ 
+                                google.maps.event.addListener(marker, 'click', function() {
+                                    infoWindow.setContent(conteudoInfoWindow);
+                                    infoWindow.open(mapa, marker);
+                                    abrirPainelPreencherOcorrencia(id);
+                                    ativarElementoNoPainelFlutuante(id);
+                                });
+
+                                // Guarda uma referencia do marcador no array
+                                markersArray.push(marker);
+                                
+                                // Guarda o id no array temporário
+                                markersArrayTemporario.push(id);
+                                
+                                // Se for um novo marker, toca o alerta e muda status do marker
+                                if(parseFloat(status) === 0)
+                                {
+                                    playAlert();
+                                    updateStatusMarker(id);
+                                }
+                            }
+                        }
+                    );
+                    
+                    // Remove do array de markers e do pinel flutuante de alertas aqueles que já não precisam ser exibidos
+                    clearOverlays();
+                    
+                    // Limpa o array temporário
+                    markersArrayTemporario = [];
+                    
+                    // Se não existem alertas, oculta o painel de alertas
+                    if($(data).find("marker").length === 0)
+                    {
+                        document.getElementById("painel-flutuante-alertas").hidden=true;
+                    }
+                    else
+                    {
+                        // Se o usuário deseja visualizar a janela de alertas
+                                                        
+                            // Torna visível o painel de alertas
+                            document.getElementById("painel-flutuante-alertas").hidden=false;
+                    }
+                
+                // Utilizado para checar o conteudo dos arrays
+                // printMarkersArray();
+                // printMarkersArrayTemporario();
+                
+                }
+            );
+        }
+        
+        // Executa o áudio de alerta
+        function playAlert()
+        {
+            document.getElementById('audio').play();
+        }
+        
+        // Atualiza o status de um "Marker novo" para "Localização aproximada" 
+        function updateStatusMarker(id)
+        {
+            var data = 'index.php?r=alerta/update-status&id='+id;
+            $.get(data);
+        }
+
+        // Envia uma requisição ajax para salvar a resposta rápida 
+        function updateRespostaRapida(id)
+        {
+            $.get
+            (
+                "index.php?r=alerta/update-resposta",
+                {
+                    id : id,
+                    resposta : $('#fieldResposta').val()
+                },
+                function(data)
+                {                    
+                    if(data === 'true')
+                    {
+                        // Escreve uma mensagem de sucesso
+                        $("#respostaFormGroup").append("<p class='text-success' style='margin-top:5px; background:#dff0d8; padding:4px; border-radius:3px; border: #d6e9c6 solid 1px;'><span class='glyphicon glyphicon-ok' aria-hidden='true'></span> Resposta enviada com sucesso</p>");
+                        
+                        // Define um intervalo (4 seg) para que a mensagem seja retirada
+                        var intervalo = setInterval
+                        (
+                                function()
+                                {
+                                    // Retira a mensagem
+                                    document.getElementById("respostaFormGroup").removeChild(document.getElementById("respostaFormGroup").lastElementChild);
+                                    
+                                    // Retira o intervalo
+                                    clearInterval(intervalo);
+                                }, 
+                                4000
+                        );
+                    }
+                }
+            );
+        }
+        
+        /*
+         * Manda uma requisição ajax para atualizar a ocorrência com os dados contidos no
+         * formulário que está no painel de preenchimento de ocorrencia
+         */
+        function updateOcorrencia(id)
+        {
+            // Guarda referência para o painel de preenchimento de ocorrencias
+            var painel = document.getElementById('painel-preencher-ocorrencia');
+            
+            $.post
+            (
+                'index.php?r=alerta/update-ocorrencia&id='+id,
+                {
+                    'Alerta[resposta]' : $('#alerta-reposta').val(),
+                    'Alerta[descricao]' : $('#alerta-descricao').val(),
+                    'Alerta[categoria]' : $('#alerta-categoria').val()
+                },
+                function(data)
+                {
+                    painel.innerHTML = data;
+
+                    if ($('#retornoOcorrencia').val() === 'true') {
+                        fecharPainelPreencherOcorrencia();
+                    }
+                }
+            );
+        }
+        
+        // Percorre o array de markers e devolve a instancia referente ao id fornecido
+        function getMarker(id)
+        {
+            for (var i = 0; i < markersArray.length; i++)
+            {
+                if(markersArray[i].id == id)
+                {
+                    return markersArray[i];
+                }
+            }
+            return null;
+        }
+        
+        // Retorna true caso o alerta esteja ativo no painel (com base no background)
+        function verificarSeAlertaEstaAtivoNoPainel(id)
+        {
+            var alertaNoPainel = document.getElementById('alertaNoPainel'+id);
+            
+            if(alertaNoPainel.getAttribute('style') === 'background:#E4E9ED;')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        
+        // Ativa o alerta com id fornecido no painel flutuante
+        function ativarElementoNoPainelFlutuante(id)
+        {
+            // Desativa todos os alertas no painel
+            var painel = document.getElementById('painel-flutuante-alertas');
+            
+            var alertasNoPainel = painel.children;
+            
+            for (i = 0; i < alertasNoPainel.length; i++) 
+            {
+                alertasNoPainel[i].removeAttribute('style');
+            }
+            
+            // Ativa o alerta com id igual ao fornecido
+            var alertaNoPainel = document.getElementById('alertaNoPainel'+id);
+            
+            alertaNoPainel.setAttribute('style', 'background:#E4E9ED;');
+        }
+        
+        function desativarElementoNoPainelFlutuante()
+        {
+            // Localiza todos os alertas existentes no painel flutuante
+            var alertasNoPainel = document.getElementById("painel-flutuante-alertas").children;
+            
+            // Para cada alerta no painel
+            for(var i=0; i < alertasNoPainel.length; i++)
+            {
+                // Se ele está ativo (com base no background)
+                if(alertasNoPainel[i].getAttribute('style') === 'background:#E4E9ED;')
+                {
+                    // Desativa (remove o background)
+                    alertasNoPainel[i].removeAttribute('style');
+                }
+            }
+        }
+        
+        // Exibe o painel de preenchimento de ocorrencias
+        function abrirPainelPreencherOcorrencia(id)
+        {
+            // Guarda referência para o painel de preenchimento de ocorrencias
+            var painel = document.getElementById('painel-preencher-ocorrencia');
+                      
+            // Anima o aparecimento da janela
+            $('#painel-preencher-ocorrencia').animate({width: "260px"}, 'fast');
+            
+            // Preenche o painel com a view preencher-ocorrencia
+            $.get('index.php?r=alerta/preencher-ocorrencia-ajax', {id: id}, function(data){painel.innerHTML = data;});
+        }
+        
+        function fecharPainelPreencherOcorrencia()
+        {
+            // Anima o fechamento da janela e elimina todos os seus filhos
+            $('#painel-preencher-ocorrencia').animate({width: "0px"}, 'fast', function(){$('#painel-preencher-ocorrencia').empty();});
+        }
+        
+        function alterarAlertaNoPainel(id, status)
+        {
+            // Muda o ícone
+            document.getElementById('alertaNoPainel'+id).firstChild.firstChild.firstChild.firstChild.setAttribute('src', propriedadesStatus[status].icon);
+            
+            // Muda o label do status
+            document.getElementById('alertaNoPainel'+id).firstChild.firstChild.lastChild.lastChild.innerHTML = propriedadesStatus[status].labelSimples;
+            
+        }
+        
+        function criarAlertaNoPainel(id, hora, data, nomePessoa, telefonePessoa, status)
+        {
+            // Cria os elementos estruturais
+            var div = document.createElement("div");
+            var table = document.createElement("table");
+            var tr = document.createElement("tr");
+            var td1 = document.createElement("td");
+            var td2 = document.createElement("td");
+            var negritoHora = document.createElement("b");
+            var labelStatus = document.createElement('span');
+            
+            // Monta a árvore
+            div.appendChild(table);
+            table.appendChild(tr);
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            td2.appendChild(negritoHora);
+            td2.appendChild(labelStatus);
+            
+            // Cria os elementos de conteúdo
+            var conteudoImagemMarcador = document.createElement("img");
+            var conteudoHora = document.createTextNode(hora);
+            var conteudoStatus = document.createTextNode(propriedadesStatus[status].labelSimples);
+ 
+            // Seta propriedades dos elementos de conteudo
+            conteudoImagemMarcador.setAttribute("src", propriedadesStatus[status].icon);
+            labelStatus.appendChild(conteudoStatus);
+
+            // Monta a árvore 
+            td1.appendChild(conteudoImagemMarcador);
+            
+            td2.appendChild(negritoHora);
+            negritoHora.appendChild(conteudoHora);
+            td2.appendChild(document.createTextNode(" - "+data));
+            td2.appendChild(document.createElement("br"));
+            td2.appendChild(document.createTextNode(nomePessoa));
+            td2.appendChild(document.createElement("br"));
+            td2.appendChild(document.createTextNode(telefonePessoa));
+            td2.appendChild(document.createElement("br"));
+            td2.appendChild(labelStatus);
+
+            var alertaNoPainel = document.getElementById("painel-flutuante-alertas").insertBefore(div, document.getElementById("painel-flutuante-alertas").firstChild);
+            alertaNoPainel.setAttribute("id", "alertaNoPainel"+id);
+
+            var divisorNoPainel = document.createElement("hr");
+            document.getElementById("painel-flutuante-alertas").insertBefore(divisorNoPainel, document.getElementById("painel-flutuante-alertas").firstChild);
+            divisorNoPainel.setAttribute("id", "divisorNoPainel"+id);
+            
+            return alertaNoPainel;
+        }
+        
+        // Retorna uma string html com o conteúdo formatado de uma infowindow
+        function formatarConteudoInfoWindow(nomePessoa, precisao, data, hora)
+        { 
+            return "<b>"+nomePessoa+"</b><br>"+data+" -"+hora+"<br>"+precisao;
+        }
+        
+        // Remove do array de markers e do painel flutuante de alertas aqueles que já não precisam ser exibidos
+        function clearOverlays()
+        {
+            var arrayAuxiliar = [];
+
+            // Para cada alerta no array de markers
+            for (var i = 0; i < markersArray.length; i++)
+            {
+                var quantidadeAlertasTemporariosDiferentes = 0;
+                
+                // Para cada alerta no array temporário
+                for (var j = 0; j < markersArrayTemporario.length; j++)
+                {
+                    // Se os ids forem iguais
+                    if(markersArray[i].id === markersArrayTemporario[j])
+                    {
+                        arrayAuxiliar.push(markersArray[i]);
+                    }
+                    else
+                    {
+                        quantidadeAlertasTemporariosDiferentes++;
+                    }
+                }
+                
+                if(quantidadeAlertasTemporariosDiferentes === markersArrayTemporario.length)
+                {
+                    // Exclui a instância do marcador no mapa
+                    markersArray[i].setMap(null);
+                    
+                    // Remove alerta do painel flutuante
+                    var alertaNoPainel = document.getElementById("alertaNoPainel"+markersArray[i].id);
+                    alertaNoPainel.parentNode.removeChild(alertaNoPainel);
+                    
+                    // Remove o divisor do painel flutuante associado ao alerta removido
+                    var divisorNoPainel = document.getElementById("divisorNoPainel"+markersArray[i].id); 
+                    divisorNoPainel.parentNode.removeChild(divisorNoPainel);
+
+                }
+            }
+            
+            // Atualiza o array de marcadores
+            markersArray = arrayAuxiliar;
+            arrayAuxiliar = [];
+
+        }
+        
+        // Retorna uma instância do marcador no mapa a partir do id
+        function getMarcadorNoMapa(id)
+        {
+            for (var i = 0; i < markersArray.length; i++)
+            {
+                if(markersArray[i].id === id)
+                {
+                    return markersArray[i];
+                } 
+            }
+            return null;
+        }
+        
+        // Remove uma instância de um marcador no mapa a partir do id
+        function removerMarcadorMarkersArray(id)
+        {
+            var arrayAuxiliar = [];
+            
+            for (var i = 0; i < markersArray.length; i++)
+            {
+                if(markersArray[i].id !== id)
+                {
+                    arrayAuxiliar.push(markersArray[i]);
+                }
+            }
+            
+            // Atualiza o array de marcadores
+            markersArray = arrayAuxiliar;
+            arrayAuxiliar = [];
+        }
+        
+        // Imprime no elemento "debug" o conteudo do array de markers
+        function printMarkersArray()
+        {
+            document.getElementById("debug").innerHTML += "<font color='red'>MarkersArray: </font>";
+            for (var i = 0; i < markersArray.length; i++)
+            {
+                document.getElementById("debug").innerHTML += markersArray[i].id+", ";
+            }
+            document.getElementById("debug").innerHTML += "<br>";
+        }
+        
+        // Imprime no elemento "debug" o conteudo do array temporário de markers
+        function printMarkersArrayTemporario()
+        {
+            document.getElementById("debug").innerHTML += "<font color='green'>MarkersArrayTemporario: </font>";
+            for (var i = 0; i < markersArrayTemporario.length; i++)
+            {
+                document.getElementById("debug").innerHTML += markersArrayTemporario+", ";
+            }
+            document.getElementById("debug").innerHTML += "<br>";
+        }
+        
+        // Imprime no elemento "debug" a mensagem fornecida
+        function printDebug(msg)
+        {
+            document.getElementById("debug").innerHTML += msg+"<br>";
+        }
+
+        google.setOnLoadCallback(inicializarMapa);
+        
+    </script>
+</div>
+    
+    
+<div id="modalConfiguracoesSistema" class="fade modal" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+<b>Configurações</b>
+</div>
+<div class="modal-body">
+<form id="formConfiguracao" action="/web/index.php" method="get">
+<input type="hidden" name="r" value="configuracao/update-configuracao"><div class='row'><div class='col-md-6'><div class="form-group field-configuracao-tempoesperaparanovoalerta required">
+<label class="control-label" for="configuracao-tempoesperaparanovoalerta">Tempo de Espera para um novo Alerta</label>
+<input type="time" id="configuracao-tempoesperaparanovoalerta" class="form-control" name="tempoEsperaParaNovoAlerta" value="00:01:00" step="1">
+
+<div class="help-block"></div>
+</div><p> Tempo mínimo que um usuário deverá aguardar se quiser emitir um outro alerta (no caso de ele já haver emitido um).</p></div><div class='col-md-6'><div class="form-group field-configuracao-toleranciaalertasfalsos required">
+<label class="control-label" for="configuracao-toleranciaalertasfalsos">Tolerância de Alertas Falsos</label>
+<input type="number" id="configuracao-toleranciaalertasfalsos" class="form-control" name="toleranciaAlertasFalsos" value="1" min="0">
+
+<div class="help-block"></div>
+</div><p> Quantidade máxima de Alertas falsos permitida por usuário. Se esta quantidade for ultrapassada, o usuário será bloqueado.</p></div></div><div class='row'><hr></div><div class='row'><div class='col-md-12'><button type="submit" class="btn btn-primary">Salvar</button><a class="btn btn-danger" href="/web/index.php?r=configuracao%2Frestaurar-configuracao" style="margin-left:15px;">Restaurar Configurações Originais</a></div></div></form>
+</div>
+
+</div>
+</div>
+</div>
+<div id="modalConfiguracoesUsuario" class="fade modal" role="dialog" tabindex="-1">
+<div class="modal-dialog ">
+<div class="modal-content">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+<b>Minhas Preferências</b>
+</div>
+<div class="modal-body">
+<form id="formConfiguracaoUsuario" action="/web/index.php" method="get">
+<input type="hidden" name="r" value="usuario/update-configuracao"><div class='row'><div class='col-md-8'><div class="form-group field-usuario-tempopermanenciamarcadores required">
+<label class="control-label" for="usuario-tempopermanenciamarcadores">Tempo de Permanência dos Marcadores no Mapa</label>
+<input type="number" id="usuario-tempopermanenciamarcadores" class="form-control" name="tempoPermanenciaMarcadores" value="1000">
+
+<div class="help-block"></div>
+</div><p> A partir do momento em que um alerta for gerado, este será o tempo <code>(em horas)</code> em que o mesmo permanecerá visível no mapa.</p></div><div class='col-md-4'><label>Zoom do Mapa</label><input form ='formConfiguracaoUsuario' id='inputZoomMapa' name='zoomMapa' type='range' min='0' max='20' value='16'><p id='labelZoomMapa' style='text-align:center;'>16</p></div></div><div class='row'><hr></div><div class='row'><div class='col-md-6'><div class="form-group field-usuario-janelaalertas required">
+
+<input type="hidden" name="janelaAlertas" value="0"><label><input type="checkbox" id="usuario-janelaalertas" name="janelaAlertas" value="1" checked> Exibir janela de alertas</label>
+
+<div class="help-block"></div>
+</div></div><div class='col-md-6'><div class="form-group field-usuario-exibiralertasatendidos required">
+
+<input type="hidden" name="exibirAlertasAtendidos" value="0"><label><input type="checkbox" id="usuario-exibiralertasatendidos" name="exibirAlertasAtendidos" value="1" checked> Exibir alertas atendidos</label>
+
+<div class="help-block"></div>
+</div></div></div><div class='row'><hr></div><div class='row'><div class='col-md-12'><button type="submit" class="btn btn-primary">Salvar</button><a class="btn btn-danger" href="/web/index.php?r=usuario%2Frestaurar-configuracao" style="margin-left:15px;">Restaurar Configurações Originais</a></div></div></form>
+</div>
+
+</div>
+</div>
+</div>
+<div id="teste" class="fade modal" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+<b>TESTE</b>
+</div>
+<div class="modal-body">
+teste
+</div>
+
+</div>
+</div>
+</div>   
+            <script>
+            var zoom = document.getElementById("inputZoomMapa");
+            var label = document.getElementById("labelZoomMapa");
+
+            zoom.addEventListener("input", function () {
+                label.innerHTML = zoom.value;
+            }, false);
+        </script>
+        
+    
+</div>
+
+<script src="/web/assets/efad351e/jquery.js"></script>
+<script src="/web/assets/8fac4653/yii.js"></script>
+<script src="/web/assets/1664b04c/js/bootstrap.js"></script>
+<script src="/web/assets/8fac4653/yii.validation.js"></script>
+<script src="/web/assets/8fac4653/yii.activeForm.js"></script>
+<script type="text/javascript">jQuery(document).ready(function () {
+jQuery('#formConfiguracao').yiiActiveForm([{"id":"configuracao-tempoesperaparanovoalerta","name":"tempoEsperaParaNovoAlerta","container":".field-configuracao-tempoesperaparanovoalerta","input":"#configuracao-tempoesperaparanovoalerta","validate":function (attribute, value, messages, deferred, $form) {yii.validation.required(value, messages, {"message":"Informe o Tempo de Espera para um novo Alerta"});}},{"id":"configuracao-toleranciaalertasfalsos","name":"toleranciaAlertasFalsos","container":".field-configuracao-toleranciaalertasfalsos","input":"#configuracao-toleranciaalertasfalsos","validate":function (attribute, value, messages, deferred, $form) {yii.validation.required(value, messages, {"message":"Informe a quantidade tolerável de Alertas falsos"});yii.validation.number(value, messages, {"pattern":/^\s*[+-]?\d+\s*$/,"message":"Tolerância de Alertas Falsos must be an integer.","skipOnEmpty":1});}}], []);
+jQuery('#modalConfiguracoesSistema').modal({"show":false});
+jQuery('#formConfiguracaoUsuario').yiiActiveForm([{"id":"usuario-tempopermanenciamarcadores","name":"tempoPermanenciaMarcadores","container":".field-usuario-tempopermanenciamarcadores","input":"#usuario-tempopermanenciamarcadores","validate":function (attribute, value, messages, deferred, $form) {yii.validation.required(value, messages, {"message":"Informe o tempo de permanência dos marcadores no mapa (em horas)"});yii.validation.number(value, messages, {"pattern":/^\s*[+-]?\d+\s*$/,"message":"Forneça um número inteiro para este campo","skipOnEmpty":1});}},{"id":"usuario-janelaalertas","name":"janelaAlertas","container":".field-usuario-janelaalertas","input":"#usuario-janelaalertas","validate":function (attribute, value, messages, deferred, $form) {yii.validation.required(value, messages, {"message":"Exibir janela de alertas cannot be blank."});}},{"id":"usuario-exibiralertasatendidos","name":"exibirAlertasAtendidos","container":".field-usuario-exibiralertasatendidos","input":"#usuario-exibiralertasatendidos","validate":function (attribute, value, messages, deferred, $form) {yii.validation.required(value, messages, {"message":"Exibir alertas atendidos cannot be blank."});}}], []);
+jQuery('#modalConfiguracoesUsuario').modal({"show":false});
+jQuery('#teste').modal({"show":false});
+});</script></body>
+</html>

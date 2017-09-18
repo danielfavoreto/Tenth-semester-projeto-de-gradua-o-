@@ -23,7 +23,6 @@
 		if ($conexao->connect_error) {
   			trigger_error('Database connection failed: '  . $conexao->connect_error, E_USER_ERROR);
 		}
-		//mysql_select_db($database_name) or die(mysql_error());
 	?>
 	<?php
 		$user = $_POST['user'];

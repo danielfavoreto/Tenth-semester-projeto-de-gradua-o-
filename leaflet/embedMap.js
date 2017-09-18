@@ -1,4 +1,4 @@
-function initmap() {
+function inicializarMapa() {
 
 	var osmSatelliteUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}';
 
@@ -12,9 +12,9 @@ function initmap() {
 
 	var baseLayers = {"osMap": osMap, "Satellite": osmSatellite};
 
-	var map = L.map('map', {layers: [osMap]}).setView([-20.277158, -40.303028], 16);
+	var mapa = L.map('map', {layers: [osMap], zoomControl: false}).setView([-20.277158, -40.303028], 16);
 
-	var control = L.control.layers(baseLayers).addTo(map);
+	var control = L.control.layers(baseLayers, null, {position: 'bottomright'}).addTo(mapa);
 
 	var MarkerIcon = L.Icon.extend({
 	    options: {
@@ -27,75 +27,6 @@ function initmap() {
 	var novoAlerta = new MarkerIcon({iconUrl: 'img/novoAlerta.png'}),
     	atendidoAlerta = new MarkerIcon({iconUrl: 'img/atendidoAlerta.png'})
 
-    L.marker([-20.277158, -40.303028], {icon: novoAlerta}).addTo(map).bindPopup("Novo alerta");
-	L.marker([-20.275844, -40.304562], {icon: atendidoAlerta}).addTo(map).bindPopup("Alerta atendido");
-}
-
-function setCookie(layer, cvalue, exdays) {
-
-    var d = new Date();
-
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-
-    var expires = "expires="+d.toUTCString();
-
-    document.cookie = layer + "=" + cvalue + ";" + expires;
-}
-
-function getCookie(cookieName) {
-
-    var layer = cookieName + "=";
-
-    var ca = document.cookie.split(';');
-
-    for (var i = 0; i < ca.length; i++) {
-
-        var c = ca[i];
-
-        while (c.charAt(0) == ' ') {
-
-            c = c.substring(1);
-        }
-
-        if (c.indexOf(layer) == 0) {
-
-            return c.substring(layer.length, c.length);
-        }
-    }
-    return "";
-}
-
-function checkCookie(baseLayers, map) {
-
-    var layerName = getCookie("layer");
-
-    if (layerName == "") {
-
-    	return "";
-    }
-    else {
-
-    	return layerName;
-    }
-}
-
-function initializeMap (mapId, layer, lat, lon, zoomDefault, baseLayers){
-
-	var cookieResult = checkCookie();
-
-	var map;
-
-	if (cookieResult == ""){
-
-		map = L.map(mapId, {layers: [layer]}).setView([lat, lon], zoomDefault);
-
-		return map;
-
-	}
-	else {
-
-		return;
-
-	}
-
+    L.marker([-20.277158, -40.303028], {icon: novoAlerta}).addTo(mapa).bindPopup("Novo alerta");
+	L.marker([-20.275844, -40.304562], {icon: atendidoAlerta}).addTo(mapa).bindPopup("Alerta atendido");
 }
