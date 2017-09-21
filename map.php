@@ -29,7 +29,13 @@
 
 		<script src = "leaflet/markercluster.js"></script>
 
+		<script src = "https://unpkg.com/@mapbox/leaflet-pip@latest/leaflet-pip.js"></script>
+
 		<script src = "leaflet/bouncingMarker/leaflet.smoothmarkerbouncing.js"></script>
+
+		<script src= "leaflet/easy-button.js"></script>		
+
+		<link href="leaflet/easy-button.css" rel="stylesheet">
     	
     	<link href="css/bootstrap.css" rel="stylesheet">
     	
@@ -137,6 +143,12 @@
 				    // MarkerCluster para fazer a categorização dos alertas
 				    var markerClusters = null;
 
+				    // UfesGeoJson para armazenar o geoJson do campus da ufes
+				    var ufesGeoJson = null;
+
+				    // LakeGeoJson para armazenar o geoJson do lago da ufes
+				    var lakeGeoJson = null;
+
 				    // Classe customizada de marcador
 				    customMarker = L.Marker.extend({
 				    	options: {
@@ -187,6 +199,29 @@
 						    fecharPainelPreencherOcorrencia();
 						} );
 
+						// puxa o arquivo geoJson da ufes e adiciona como layer ao mapa
+						$.getJSON("ufesBounds.geoJson",function(data){
+
+							ufesGeoJson = L.geoJson(data, {
+								style: {	
+									fillColor: 'white',
+								    weight: 2,
+									opacity: 5,
+									color: '#081223',  //Outline color
+								    fillOpacity: 0.1
+								}
+							}).addTo(mapa);
+
+							mapa.fitBounds(ufesGeoJson.getBounds());
+						});
+
+						// puxa o arquivo geoJson do lago
+						$.getJSON("lakeBounds.geoJson", function(data){
+
+							lakeGeoJson = L.geoJson(data);
+
+						});
+
 			            // Realiza o load dos Markers no mapa
 			            updateMaps();
 
@@ -198,15 +233,6 @@
 					// Atualiza os Markers no mapa
 			        function updateMaps() 
 			        {
-			            /* Quando chamamos um arquivo, o browser pode tomar a decisão
-			             * de armazenar em cache. Se o browser utilizar cache, as próximas 
-			             * requisições do mesmo recurso não batem no servidor.
-			             *
-			             * Definindo um modificador único para o arquivo de dados conseguimos "FORÇAR" 
-			             * o browser a baixar novamente o arquivo.
-			             *
-			             * Por isto, utilizamos o parâmetro 't' no header do http para dizer NO-CACHE!!
-			             */
 			            var timestamp = new Date().getTime();
 			            
 			            // Recebe um Json
@@ -243,6 +269,47 @@
 									
 									// encontrou um novo marcador
      	                            if (marcadorNoMapa == null){
+
+     	                            	// variável para verificar se o marcador está dentro da ufes
+     	                            	var isInsideUfes;
+
+     	                            	// variável para verificar se o marcador está dentro do lago
+     	                            	var isInsideLake;
+
+										isInsideUfes = leafletPip.pointInLayer([data[i].lng, data[i].lat], ufesGeoJson, true);     	                            	
+
+										isInsideLake = leafletPip.pointInLayer([data[i].lng, data[i].lat], lakeGeoJson, true);    
+
+										// se true, necessita descartar marcador pois está fora do campus
+										if (isInsideUfes.length == 0){
+
+											console.log("Fora da ufes: " + data[i].id);
+
+											$.get("delete_alert.php", {id:data[i].id}, function(data){
+
+												if (data != "true"){
+
+													console.log("Não conseguiu deletar o alerta fora do campus");
+												}
+											});
+
+											continue;
+										}
+										// se true, necessita descartar marcador pois está dentro do lago
+										if (isInsideLake.length != 0){
+
+											console.log("Dentro do lago: " + data[i].id);
+
+											$.get("delete_alert.php", {id:data[i].id}, function(data){
+
+												if (data != "true"){
+
+													console.log("Não conseguiu deletar o alerta dentro do lago");
+												}
+											});
+
+											continue;
+										}
 
         								console.log("Novo marcador id: " + data[i].id + " status: " + data[i].status);
      	                            }
@@ -334,7 +401,7 @@
 	                                } else {
 
 	                                	mapa.removeLayer(marker);
-	                                	
+
 	                                	markerClusters.addLayer(marker);
 	                                }
 
@@ -432,7 +499,7 @@
 			        function playAlert(marker)
 			        {
 
-			        	//marker.bounce(10);
+			        	marker.bounce(10);
 
 			        	/*marker.on('click', function() {
         					this.stopBouncing();
