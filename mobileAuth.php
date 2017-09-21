@@ -27,6 +27,11 @@
 			    	header('Content-Type: application/json');
 					echo json_encode($data);
 			   	}
+			   	else{
+			   		$data = [ 'status' => 'false', 'nomePessoa' => 'erro na query principal' ];
+    				header('Content-Type: application/json');
+					echo json_encode($data);
+			   	}
 			}
 			else {
 				$data = [ 'status' => 'false', 'nomePessoa' => 'erro na query de cel' ];

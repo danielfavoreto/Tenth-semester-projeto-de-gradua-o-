@@ -51,6 +51,16 @@
 		   	#w0{
 		   		background-color: #0E2F44;
 		   	}
+		   	.popupCenter{
+		   		text-align: center;
+		   	}
+		   	#container-preencher{
+		   		color: #000;
+		   		background-color: #000;
+		   	}
+		   	#w1{
+		   		background-color: #fff;
+		   	}
 		</style>
 		
 	</head>
@@ -59,6 +69,10 @@
 		<div class = "wrap">
 		    <nav id="w0" class="navbar-inverse navbar-fixed-top navbar" role="navigation">
 		    	<div class="container">
+
+		    		<!-- Div usada para categorizar as ocorrencias -->
+		    		<div id="painel-preencher-ocorrencia"> </div>
+
 					<div id = "w0-collapse" class ="collapse navbar-collapse">
 						<ul class="navbar-nav navbar-center nav">
 							<li>
@@ -75,26 +89,11 @@
 				</div>
 			</nav>
 
-		    <!-- Div usada para categorizar as ocorrencias -->
-		    <div id="painel-preencher-ocorrencia"> </div>
-
-			<!-- Div do mapa -->
 			<div id = "map"> </div>
 
-			<!-- Audio executado quando um novo Alerta for recebido -->
     		<!--<audio id="audio"><source src="audio/alert.mp3" type="audio/mp3" /></audio>-->
 
 				<script>
-					/* 
-			         * Array de propriedades dos possíveis status de um Alerta.
-			         * Aqui são armazendas informações como endereço da imagem do ícone do marcador,
-			         * sombra do ícone do marcador, label que é exibido para identificar o status e 
-			         * animação do marcador.
-			         * 
-			         * Possíveis status:
-			         * 0 - Novo alerta 
-			         * 1 - Atendido
-			         */
 			        var propriedadesStatus = {
 			            0: {
 			                iconUrl: 'img/novoAlerta.png',
@@ -103,8 +102,23 @@
 			            },
 			            1: {
 			                iconUrl: 'img/atendidoAlerta.png',
-			                label: '<span class="label label-success">Atendido</span>',
-			                labelSimples: "Atendido"
+			                label: '<span class="label label-success">Atendido - Assalto</span>',
+			                labelSimples: "Assalto"
+			            },
+			            2: {
+			                iconUrl: 'img/atendidoAlerta.png',
+			                label: '<span class="label label-success">Atendido - Acidente</span>',
+			                labelSimples: "Acidente"
+			            },
+			            3: {
+			                iconUrl: 'img/atendidoAlerta.png',
+			                label: '<span class="label label-success">Atendido - Outros</span>',
+			                labelSimples: "Outros"
+			            },
+			            4: {
+			                iconUrl: 'img/atendidoAlerta.png',
+			                label: '<span class="label label-success">Atendido - Falso</span>',
+			                labelSimples: "Falso"
 			            }
 			        };
 
@@ -154,9 +168,9 @@
 
 						var osmAttrib ='Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>';
 
-						var osMap = L.tileLayer(osmMapUrl, {minZoom: 15, maxZoom: 20, attribution: osmAttrib});		
+						var osMap = L.tileLayer(osmMapUrl, {minZoom: 15, maxZoom: 19, attribution: osmAttrib});		
 
-						var osmSatellite = L.tileLayer(osmSatelliteUrl, {minZoom: 15, maxZoom: 20, attribution: osmAttrib, subdomains: 'abcd', id: 'mapbox.satellite', accessToken: 'pk.eyJ1IjoiZGFuaWVsZmF2b3JldG8iLCJhIjoiY2o2cjJsc29kMDUwajMycGJ1NW02OGdxMSJ9.EAdQQ-HPcGKe6I0SYLEzOg'});
+						var osmSatellite = L.tileLayer(osmSatelliteUrl, {minZoom: 15, maxZoom: 19, attribution: osmAttrib, subdomains: 'abcd', id: 'mapbox.satellite', accessToken: 'pk.eyJ1IjoiZGFuaWVsZmF2b3JldG8iLCJhIjoiY2o2cjJsc29kMDUwajMycGJ1NW02OGdxMSJ9.EAdQQ-HPcGKe6I0SYLEzOg'});
 
 						var baseLayers = {"osMap": osMap, "Satellite": osmSatellite};
 
@@ -230,62 +244,98 @@
 									// encontrou um novo marcador
      	                            if (marcadorNoMapa == null){
 
-        								console.log("Novo marcador id: " + data[i].id);
+        								console.log("Novo marcador id: " + data[i].id + " status: " + data[i].status);
      	                            }
-     	                            else { 
+     	                            else { // marcador é o mesmo mas precisa verificar se tem status diferente
+
+     	                            	if (marcadorNoMapa.options.status != data[i].status){// status é diferente ?
+
+     	                            		console.log("status diferente: " + marcadorNoMapa.options.id);
+
+     	                            		removerMarcadorMarkersArray(marcadorNoMapa.options.id);
+
+				                            markerClusters.removeLayer(marcadorNoMapa);
+
+     	                            		var marcadorIcone = new MarkerIcon({iconUrl:propriedadesStatus[data[i].status].iconUrl});
+
+				                            // Cria uma instância de um marcador no mapa
+										    var marker = new customMarker([data[i].lat,data[i].lng],{
+										    	icon: marcadorIcone,
+										    	id: data[i].id,
+										    	lat: data[i].lat,
+										    	lng: data[i].lng,
+										    	dataHora: data[i].dataHora,
+										    	nomePessoa: data[i].nome,
+										    	telefonePessoa: data[i].telefone,
+										    	status: data[i].status,
+										    	loginPessoa: data[i].login
+										    }).setBouncingOptions({
+											        bounceHeight : 30,    // height of the bouncing
+											        bounceSpeed  : 24,    // bouncing speed coefficient
+											        exclusive    : false,  // if this marker bouncing all others must stop
+											    });
+
+											marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nome, data[i].dataHora, data[i].status));
+
+			                                //Define que um clique sobre o marcador abrirá a categorização de alertas
+
+			                                marker.on('click', function() {
+			                                    abrirPainelPreencherOcorrencia(this.options.id);
+			                                });
+
+			                                mapa.removeLayer(marker);
+
+				                            markerClusters.addLayer(marker);
+
+				                            // Guarda uma referência do marcador no array
+				                            markersArray.push(marker);
+	     	                            } // fim do if de status
 
      	                            	console.log("Encontrou marcador existente id: " + marcadorNoMapa.options.id);
      	                            	continue;
      	                            }
 
-			                		var id = data[i].id;
-			                		var lat = data[i].lat;
-			                		var lng = data[i].lng;
-			                		var dataHora = data[i].dataHora;
-			                		var nomePessoa = data[i].nome;
-			                		var telefonePessoa = data[i].telefone;
-			                		var status = data[i].status;
-			                		var loginPessoa = data[i].login;
-			                            
-									var marcadorIcone = new MarkerIcon({iconUrl:propriedadesStatus[status].iconUrl});
+									var marcadorIcone = new MarkerIcon({iconUrl:propriedadesStatus[data[i].status].iconUrl});
 
 		                            // Cria uma instância de um marcador no mapa
-								    var marker = new customMarker([lat,lng],{
+								    var marker = new customMarker([data[i].lat,data[i].lng],{
 								    	icon: marcadorIcone,
-								    	id: id,
-								    	lat: lat,
-								    	lng: lng,
-								    	dataHora: dataHora,
-								    	nomePessoa: nomePessoa,
-								    	telefonePessoa: telefonePessoa,
-								    	status: status,
-								    	loginPessoa: loginPessoa
+								    	id: data[i].id,
+								    	lat: data[i].lat,
+								    	lng: data[i].lng,
+								    	dataHora: data[i].dataHora,
+								    	nomePessoa: data[i].nome,
+								    	telefonePessoa: data[i].telefone,
+								    	status: data[i].status,
+								    	loginPessoa: data[i].login
 								    }).setBouncingOptions({
 									        bounceHeight : 30,    // height of the bouncing
 									        bounceSpeed  : 24,    // bouncing speed coefficient
 									        exclusive    : false,  // if this marker bouncing all others must stop
 									    });
 
-									marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(nomePessoa, dataHora, status));
+									marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nome, data[i].dataHora, data[i].status));
 
-	                                
 	                                //Define que um clique sobre o marcador abrirá a categorização de alertas
 
-	                                mapa.on(marker, 'click', function() {
-	                                    //infoWindow.setContent(conteudoInfoWindow);
-	                                    //infoWindow.open(mapa, marker);
-	                                    abrirPainelPreencherOcorrencia(id);
-	                                    //ativarElementoNoPainelFlutuante(id);
+	                                marker.on('click', function() {
+	                                    abrirPainelPreencherOcorrencia(this.options.id);
 	                                });
 
-		                            // Se for um novo marker, toca o alerta e muda status do marker
-	                                if (parseFloat(status) === 0)
+		                            // Se for um novo marker, toca o alerta e add marker ao cluster
+	                                if (data[i].status == 0)
 	                                {
 	                                    playAlert(marker);
 
 	                                    mapa.removeLayer(marker);
 
 		                            	markerClusters.addLayer(marker);
+
+	                                } else {
+
+	                                	mapa.removeLayer(marker);
+	                                	
+	                                	markerClusters.addLayer(marker);
 	                                }
 
 		                            // Guarda uma referência do marcador no array
@@ -303,15 +353,14 @@
 			            
 			            $.post
 			            (
-			                'update_ocorrencia.php?id=' + id,
+			                'update_ocorrencia.php?',
 			                {
-			                    'Alerta[categoria]' : $('#alerta-categoria').val()
+			                	id : id,
+			                    categoria : $('#alerta-categoria').val()
 			                },
 			                function(data)
 			                {
-			                    painel.innerHTML = data;
-
-			                    if ($('#retornoOcorrencia').val() === 'true') {
+			                    if (data === 'true'){
 			                        fecharPainelPreencherOcorrencia();
 			                    }
 			                }
@@ -328,7 +377,7 @@
 			            $('#painel-preencher-ocorrencia').animate({width: "260px"}, 'fast');
 			            
 			            // Preenche o painel com a view preencher-ocorrencia
-			            $.get('preencher_ocorrencia.php?', {id: id}, function(data){painel.innerHTML = data;});
+			            $.get('preencher_ocorrencia.php?', {id: id}, function(data){painel.innerHTML = data; console.log("id pedido: " + id + "data preencher: " + data);});
 			        }
 
 			        function fecharPainelPreencherOcorrencia()
@@ -341,7 +390,7 @@
 			        function formatarConteudoInfoWindow(nomePessoa, dataHora, status)
 			        { 
 			            //return "<b>"+nomePessoa+"</b><br>"+data+" -"+hora+"<br>"+propriedadesStatus[status].label;
-    		            return "<b>"+ nomePessoa + "</b><br>" + dataHora + "<br>" + propriedadesStatus[status].label;
+    		            return "<p class = 'popupCenter'> <b>"+ nomePessoa + "</b><br>" + dataHora + "<br>" + propriedadesStatus[status].label + "<p>";
 
 			        }
 
@@ -357,7 +406,7 @@
 			        {
 			            for (var i = 0; i < markersArray.length; i++)
 			            {
-			                if (markersArray[i].options.id === id)
+			                if (markersArray[i].options.id == id)
 			                {
 			                	console.log("getMarcadorNoMapa id: " + id);
 			                    return markersArray[i];
@@ -371,8 +420,9 @@
 
 			        	for (var i = 0; i < markersArray.length; i++)
 			            {
-			                if (markersArray[i].options.id === id)
+			                if (markersArray[i].options.id == id)
 			                {
+			                	console.log("removeu: " + id);
 			                    markersArray.splice(i,1);
 			                } 
 			            }
@@ -382,11 +432,11 @@
 			        function playAlert(marker)
 			        {
 
-			        	marker.bounce();
+			        	//marker.bounce(10);
 
-			        	marker.on('click', function() {
+			        	/*marker.on('click', function() {
         					this.stopBouncing();
-    					});
+    					});*/
 			            //document.getElementById('audio').play();
 			        }
 
