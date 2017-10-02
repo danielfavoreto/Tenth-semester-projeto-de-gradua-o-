@@ -447,7 +447,7 @@
 		            var painel = document.getElementById('painel-preencher-ocorrencia');
 		                      
 		            // Anima o aparecimento da janela
-		            $('#painel-preencher-ocorrencia').animate({width: "260px"}, 'fast');
+		            $('#painel-preencher-ocorrencia').animate({width: "330px"}, 'fast');
 		            
 		            // Preenche o painel com a view preencher-ocorrencia
 		            $.get('preencher_ocorrencia.php?', {id: id}, function(data){painel.innerHTML = data; console.log("id pedido: " + id + "data preencher: " + data);});

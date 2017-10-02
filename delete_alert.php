@@ -16,7 +16,17 @@
 		$sql = mysqli_query($conexao,"DELETE FROM alertas WHERE id = $id");
 
 		if ($sql){
-			echo "true";			
+
+			$file = "uploads/" .$id ."audio.mp3";
+
+			if (!unlink($file))
+			{
+			  echo ("false");
+			}
+			else
+			{
+			  echo ("true");
+			}	
 		}
 		else {
 			echo "false";

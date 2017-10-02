@@ -398,7 +398,7 @@ div.ui-datepicker{
     top: 70px;
     left: 20px;
     z-index: 5;
-    background-color: red;
+    background-color: white;
     //border: 0px solid #82939b;
     border-radius: 5px;
     text-align: center;
@@ -408,7 +408,7 @@ div.ui-datepicker{
 
 /* FormulÃ¡rio */
 #painel-preencher-ocorrencia > .container {
-    width: 260px;
+    width: 330px;
     background: #fff;
     margin: 0px;
     border-radius: 5px;

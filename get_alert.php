@@ -28,36 +28,66 @@
 					if (isset($_POST['lng'])){
 
 						$lng = $_POST['lng'];
-						
-						$sql = mysqli_query($conexao,"INSERT INTO alertas (nome,telefone,status,dataHora,lat,lng,login) values ('$name', '$tel', '0', NOW(), '$lat', '$lng', '$usr')");
+
+						$sql = mysqli_query($conexao,"INSERT INTO alertas (nome,telefone,status,dataHora,lat,lng,login) values ('$name', '$tel', '0', NOW(), '-20.275804', '-40.304316', '$usr')");
 
 						if ($sql){
 							
-							$id = mysqli_query($conexao,"SELECT LAST_INSERT_ID()");	
+							// pega o id do ultimo insert
+							$id = $conexao->insert_id;	
 
-							echo "$id";
+							$file_path = "uploads/" .($conexao->insert_id);
+
+	   						$file_path = $file_path . basename( $_FILES['uploaded_file']['name']);
+
+	   						$tentativa = move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $file_path);
+
+	   						if ($tentativa){
+
+								$data = [ 'status' => 'true', 'id' => $id];
+				    			header('Content-Type: application/json');
+								echo json_encode($data);	   							
+	   						}
+	   						else{
+
+								$data = [ 'status' => ' erro ao enviar o áudio'];
+				    			header('Content-Type: application/json');
+								echo json_encode($data);		
+	   						}
 						}
 						else {
-							echo "false";
+							$data = [ 'status' => 'false'];
+			    			header('Content-Type: application/json');
+							echo json_encode($data);
 						}
 					}
 					else {
-						echo "false";
+						$data = [ 'status' => 'false'];
+		    			header('Content-Type: application/json');
+						echo json_encode($data);
 					}
 				}
 				else {
-					echo "false";
+					$data = [ 'status' => 'false'];
+	    			header('Content-Type: application/json');
+					echo json_encode($data);
 				}
 			}
 			else {
-				echo "false";
+				$data = [ 'status' => 'false'];
+    			header('Content-Type: application/json');
+				echo json_encode($data);
 			}
 		}
 		else {
-			echo "false";
+			$data = [ 'status' => 'false'];
+			header('Content-Type: application/json');
+			echo json_encode($data);
 		}
 	}
 	else {
-		echo "false";
+		$data = [ 'status' => 'false'];
+		header('Content-Type: application/json');
+		echo json_encode($data);
 	}
 ?>
