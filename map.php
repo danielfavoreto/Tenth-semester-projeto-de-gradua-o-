@@ -130,6 +130,14 @@
 		            }
 		        };
 
+		        var selecionadoAssalto = false;
+
+		        var selecionadoAcidente = false;
+
+		        var selecionadoOutro = false;
+
+		        var selecionadoFalso = false;
+
 				// Popup dos Markers
 				var infoWindow = null;
 
@@ -190,7 +198,7 @@
 
 					mapa = L.map('map', {layers: [osMap], zoomControl: false}).setView([-20.277158, -40.303028], 16);
 
-					var control = L.control.layers(baseLayers, null, {position: 'bottomright'}).addTo(mapa);
+					var control = L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(mapa);
 
 					markerClusters = L.markerClusterGroup();
 
@@ -224,9 +232,129 @@
 
 					});
 
-					L.easyButton('<img src="img/location.png">', function(btn, mapa){
-    					mapa.setView([-20.277158, -40.303028]);
-    				}).addTo( mapa );
+	   				var categorizacaoPorAssalto = L.easyButton({
+					  states: 
+					  [{
+					    stateName: 'add-markers-assalto',
+					    icon: '<img src="img/assalto.png">',
+					    title: 'Exibir apenas alertas de assalto',
+					    onClick: function(control) {
+					    	if (selecionadoAcidente || selecionadoOutro || selecionadoFalso){
+					    		return;
+					    	}
+					    	else {
+					    		selecionadoAssalto = true;
+					    	}
+					      	selecionaPorCategoria(1);
+					      	control.state('remove-markers-assalto');
+					    }
+					  }, 
+					  {
+					    stateName: 'remove-markers-assalto',
+					    icon: '<img src="img/undo.png">',
+						title: 'Exibir todos os alertas',
+					    onClick: function(control) {
+					    	selecionadoAssalto = false;
+					      	removeSelecaoPorCategoria(1);
+					      	control.state('add-markers-assalto');
+					    }
+					  }]
+					});
+
+					categorizacaoPorAssalto.addTo(mapa);
+
+					var categorizacaoPorAcidente = L.easyButton({
+					  states: 
+					  [{
+					    stateName: 'add-markers-acidente',
+					    icon: '<img src="img/acidente.png">',
+					    title: 'Exibir apenas alertas de acidente',
+					    onClick: function(control) {
+					    	if (selecionadoAssalto || selecionadoOutro || selecionadoFalso){
+					    		return;
+					    	}
+					    	else {
+					    		selecionadoAcidente = true;
+					    	}					    	
+					      	selecionaPorCategoria(2);
+					      	control.state('remove-markers-acidente');
+					    }
+					  }, 
+					  {
+					    stateName: 'remove-markers-acidente',
+					    icon: '<img src="img/undo.png">',
+						title: 'Exibir todos os alertas',
+					    onClick: function(control) {
+					    	selecionadoAcidente = false;
+					      	removeSelecaoPorCategoria(2);
+					      	control.state('add-markers-acidente');
+					    }
+					  }]
+					});
+
+					categorizacaoPorAcidente.addTo(mapa);
+
+					var categorizacaoPorOutros = L.easyButton({
+					  states: 
+					  [{
+					    stateName: 'add-markers-outros',
+					    icon: '<img src="img/outro.png">',
+					    title: 'Exibir apenas alertas de outras categorias',
+					    onClick: function(control) {
+					    	if (selecionadoAssalto || selecionadoAcidente || selecionadoFalso){
+					    		return;
+					    	}
+					    	else {
+					    		selecionadoOutro = true;
+					    	}					    	
+					      	selecionaPorCategoria(3);
+					      	control.state('remove-markers-outros');
+					    }
+					  }, 
+					  {
+					    stateName: 'remove-markers-outros',
+					    icon: '<img src="img/undo.png">',
+						title: 'Exibir todos os alertas',
+					    onClick: function(control) {
+					    	selecionadoOutro = false;
+					      	removeSelecaoPorCategoria(3);
+					      	control.state('add-markers-outros');
+					    }
+					  }]
+					})
+
+					categorizacaoPorOutros.addTo(mapa);
+
+					var categorizacaoPorFalso = L.easyButton({
+					  states: 
+					  [{
+					    stateName: 'add-markers-falso',
+					    icon: '<img src="img/falso.png">',
+					    title: 'Exibir apenas alertas falsos',
+					    onClick: function(control) {
+					    	if (selecionadoAssalto || selecionadoAcidente || selecionadoOutro){
+					    		return;
+					    	}
+					    	else {
+					    		selecionadoFalso = true;
+					    	}					    	
+					      	selecionaPorCategoria(4);
+					      	control.state('remove-markers-falso');
+					    }
+					  }, 
+					  {
+					    stateName: 'remove-markers-falso',
+					    icon: '<img src="img/undo.png">',
+						title: 'Exibir todos os alertas',
+					    onClick: function(control) {
+					    	selecionadoFalso = false;
+					      	removeSelecaoPorCategoria(4);
+					      	control.state('add-markers-falso');
+					    }
+					  }]
+					});
+
+					categorizacaoPorFalso.addTo(mapa);					
 
 		            // Realiza o load dos Markers no mapa
 		            updateMaps();
@@ -507,11 +635,40 @@
 		        {
 
 		        	marker.bounce(10);
+		        }
 
-		        	/*marker.on('click', function() {
-    					this.stopBouncing();
-					});*/
-		            //document.getElementById('audio').play();
+		        // Seleciona assalto
+		        function selecionaPorCategoria(status){
+
+		        	for (var i = 0; i < markersArray.length; i++){
+
+		        		if (markersArray[i].options.status != status && markersArray[i].options.status != 0){
+
+							markerClusters.removeLayer(markersArray[i]);
+		        		}
+		        	}
+		        }
+
+		        // Exibe todos os alertas
+		        function removeSelecaoPorCategoria(status){
+
+		        	for (var i = 0; i < markersArray.length; i++){
+
+		        		if (markersArray[i].options.status != status && markersArray[i].options.status != 0){
+
+							markersArray[i].addTo(mapa).bindPopup(formatarConteudoInfoWindow(markersArray[i].options.nome, markersArray[i].options.dataHora, markersArray[i].options.status));
+
+	                        //Define que um clique sobre o marcador abrirá a categorização de alertas
+
+	                        markersArray[i].on('click', function() {
+	                            abrirPainelPreencherOcorrencia(this.options.id);
+	                        });
+
+	                        mapa.removeLayer(markersArray[i]);
+
+	                        markerClusters.addLayer(markersArray[i]);
+		        		}
+		        	}
 		        }
 
 				inicializarMapa();	
