@@ -633,7 +633,6 @@
 				// Executa o áudio de alerta
 		        function playAlert(marker)
 		        {
-
 		        	marker.bounce(10);
 		        }
 
@@ -656,7 +655,7 @@
 
 		        		if (markersArray[i].options.status != status && markersArray[i].options.status != 0){
 
-							markersArray[i].addTo(mapa).bindPopup(formatarConteudoInfoWindow(markersArray[i].options.nome, markersArray[i].options.dataHora, markersArray[i].options.status));
+							markersArray[i].addTo(mapa).bindPopup(formatarConteudoInfoWindow(markersArray[i].options.nomePessoa, markersArray[i].options.dataHora, markersArray[i].options.status));
 
 	                        //Define que um clique sobre o marcador abrirá a categorização de alertas
 
@@ -670,6 +669,46 @@
 		        		}
 		        	}
 		        }
+
+		        function updateRespostaRapida(id)
+		        {
+		        	//console.log("fieldResposta: " + $('#fieldResposta').val());
+		            $.get
+		            (
+		                "update_resposta_rapida.php?",
+		                {
+		                    id : id,
+		                    resposta : $('#fieldResposta').val()
+		                },
+		                function(data)
+		                {                    
+		                    if(data === 'true')
+		                    {
+		                    	console.log("fieldResposta: OK");
+		                    
+		                        // Escreve uma mensagem de sucesso
+		                        $("#respostaFormGroup").append("<p class='text-success' style='margin-top:5px; background:#dff0d8; padding:4px; border-radius:3px; border: #d6e9c6 solid 1px;'> Resposta enviada com sucesso</p>");
+		                        
+		                        // Define um intervalo (4 seg) para que a mensagem seja retirada
+		                        var intervalo = setInterval
+		                        (
+		                                function()
+		                                {
+		                                    // Retira a mensagem
+		                                    document.getElementById("respostaFormGroup").removeChild(document.getElementById("respostaFormGroup").lastElementChild);
+		                                    
+		                                    // Retira o intervalo
+		                                    clearInterval(intervalo);
+		                                }, 
+		                                4000
+		                        );
+		                    }
+		                    else{
+		                    	console.log("erro no envio da resposta rapida: " + data);
+		                    }
+		                }
+		            );
+		        }		        
 
 				inicializarMapa();	
 
