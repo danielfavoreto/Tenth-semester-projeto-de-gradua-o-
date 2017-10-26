@@ -1,3 +1,9 @@
+<?php
+    if (isset($_SESSION["user"]) && isset($_SESSION["password"])) {
+        header("Location: map.php");
+        exit;
+    }
+?>
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
@@ -65,7 +71,7 @@
                                 </div>
                             </div>
                         </div>
-
+<!--
                         <div class="form-group field-loginform-rememberme">
 
                             <div class='row'>
@@ -76,7 +82,7 @@
 
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
 
                         <div class="form-group">
                             <div class='row'>

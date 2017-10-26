@@ -4,3 +4,66 @@ in C:\wamp64\www\alertaUfes\web\index.php (13)
 2017/08/31 00:37:32 [warning] [application] Failed to set unsafe attribute "login" of "LoginForm".
 in C:\wamp64\www\alertaUfes\web\protected\controllers\SiteController.php (92)
 in C:\wamp64\www\alertaUfes\web\index.php (13)
+2017/10/07 03:22:28 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/restaurar-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/restaur...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Frestaurar-configuracao
+HTTP_REFERER=http://alertaufes/map.php
+---
+2017/10/07 03:22:28 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/restaurar-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/restaur...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Frestaurar-configuracao
+HTTP_REFERER=http://alertaufes/map.php
+---
+2017/10/07 03:22:45 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/restaurar-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/restaur...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Frestaurar-configuracao
+HTTP_REFERER=http://alertaufes/map.php
+---
+2017/10/09 14:42:57 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/restaurar-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/restaur...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Frestaurar-configuracao
+HTTP_REFERER=http://alertaufes/configuracoes.php
+---
+2017/10/09 15:13:06 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/update-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/update-...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Fupdate-configuracao&tempoPermanenciaMarcadores=-1
+HTTP_REFERER=http://alertaufes/configuracoes.php
+---
+2017/10/09 15:17:07 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/update-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/update-...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Fupdate-configuracao&tempoPermanenciaMarcadores=-55
+HTTP_REFERER=http://alertaufes/configuracoes.php
+---
+2017/10/09 15:18:02 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "usuario/update-configuracao".' in C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php:286
+Stack trace:
+#0 C:\wamp64\www\alertaUfes\yii\framework\web\CWebApplication.php(141): CWebApplication->runController('usuario/update-...')
+#1 C:\wamp64\www\alertaUfes\yii\framework\base\CApplication.php(185): CWebApplication->processRequest()
+#2 C:\wamp64\www\alertaUfes\web\index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/web/index.php?r=usuario%2Fupdate-configuracao&tempoPermanenciaMarcadores=-1
+HTTP_REFERER=http://alertaufes/configuracoes.php
+---

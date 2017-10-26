@@ -13,11 +13,11 @@
 						
 		$id = $_GET['id'];
 
-		$sql = mysqli_query($conexao,"SELECT nome, telefone, status, resposta FROM alertas WHERE id = '$id'");
+		$sql = mysqli_query($conexao,"SELECT nomePessoa, telefone, status, resposta FROM alertas WHERE id = '$id'");
 
 		$rows = mysqli_fetch_array($sql);
 
-		$nome = $rows['nome'];
+		$nome = $rows['nomePessoa'];
 		$telefone = $rows['telefone'];
 		$status = $rows['status'];
 		$resposta = $rows['resposta'];

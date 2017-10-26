@@ -29,7 +29,7 @@
 
 						$lng = $_POST['lng'];
 
-						$sql = mysqli_query($conexao,"INSERT INTO alertas (nome,telefone,status,dataHora,lat,lng,login) values ('$name', '$tel', '0', NOW(), '-20.275804', '-40.304316', '$usr')");
+						$sql = mysqli_query($conexao,"INSERT INTO alertas (nomePessoa,telefone,status,data,hora,lat,lng,login) values ('$name', '$tel', '0', curdate(), curtime(), '$lat', '$lng', '$usr')");
 
 						if ($sql){
 							

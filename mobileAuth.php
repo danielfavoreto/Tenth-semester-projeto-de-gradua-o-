@@ -10,12 +10,18 @@
 ?>
 <?php
 	if (isset($_POST["usr"])){
+
 		$user = $_POST["usr"];
+
 		if (isset($_POST['psw'])){
+
 			$password = $_POST['psw'];
+
 			if (isset($_POST['cel'])){
+
 				$cellPhone = $_POST['cel'];
-				$sql = mysqli_query($conexao,"SELECT nome FROM pessoas WHERE login = '$user' AND senha = '$password'");
+				
+				$sql = mysqli_query($conexao,"SELECT nomePessoa FROM pessoas WHERE login = '$user' AND senha = '$password'");
 
 				$row = mysqli_fetch_array($sql);
    				$result = $row[0];

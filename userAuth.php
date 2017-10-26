@@ -27,7 +27,7 @@
 	<?php
 		$user = $_POST['user'];
 		$password = $_POST['password'];
-		$sql = "SELECT * FROM cadastro WHERE login = '$user' AND senha = '$password'";
+		$sql = "SELECT * FROM usuarios WHERE login = '$user' AND senha = '$password'";
 
 		$rs = $conexao->query($sql);
  

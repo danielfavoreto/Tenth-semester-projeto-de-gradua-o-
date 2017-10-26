@@ -17,6 +17,7 @@
 		exit;
 	}
 ?>
+
 <!DOCTYPE html>
 <html>
 	<head>
@@ -69,6 +70,57 @@
 		   	#w1{
 		   		background-color: #fff;
 		   	}
+		   	label span { 
+		   		color: #449D44;
+		   	}
+			#slidecontainer label {
+			    display: block;
+			    text-align: center;
+			}		   	
+		   	#slidecontainer {
+			    width: 25%;
+			}
+			#tempoPermanencia{
+				display: block;
+				width: 100%;
+				height: 17px;
+				font-size: 14px;
+				color: #0E2F44;
+				background-color: #449D44;
+				border-radius: 10px;	
+				text-align: center;		
+				font-weight: bold;	
+			}
+			.slider {
+			    -webkit-appearance: none;
+			    width: 100%;
+			    height: 15px;
+			    border-radius: 10px;   
+			    background: #449D44;
+			    outline: none;
+			    opacity: 0.7;
+			    -webkit-transition: .2s;
+			    transition: opacity .2s;
+			}
+
+			.slider::-webkit-slider-thumb {
+			    -webkit-appearance: none;
+			    appearance: none;
+			    width: 12px;
+			    height: 12px;
+			    border-radius: 50%; 
+			    background: #0E2F44;
+			    cursor: pointer;
+			}
+
+			.slider::-moz-range-thumb {
+			    width: 25px;
+			    height: 25px;
+			    border-radius: 50%;
+			    background: #0E2F44;
+			    cursor: pointer;
+			}
+
 		</style>
 		
 	</head>
@@ -84,15 +136,30 @@
 					<div id = "w0-collapse" class ="collapse navbar-collapse">
 						<ul class="navbar-nav navbar-center nav">
 							<li>
-								<a href="#"> <img src= "img/conf.png"> </a>
+								<a href="configuracoes.php"> <img src= "img/conf.png"> </a>
 							</li>							
 							<li>
-								<a href="#"> <img src = "img/report.png"> </a>
+								<a href="relatorio.php"> <img src = "img/report.png"> </a>
 							</li>
 							<li>
-								<a href="#"> <img src="img/exit.png"> </a>
+								<a href="logout.php"> <img src="img/exit.png"> </a>
 							</li>
 						</ul>
+		
+						<!--<div id = "slidecontainer" class="navbar-nav navbar-right nav">
+
+							<label> <span> Zoom do mapa </span> </label>							
+						  	<input type="range" min="15" max="19" value="15" class="slider form-control" id="zoomRange">
+
+						</div>	-->
+
+						<!--<div class="navbar-nav navbar-left nav">
+
+							<label> <span> Tempo de Permanência dos Marcadores (em horas) </span> </label>
+
+							<input type="number" min = "1" class = "slider form-control" id="tempoPermanencia" value="1000" step = "1" onchange = "validateTempo()">
+
+						</div>-->
 					</div>
 				</div>
 			</nav>
@@ -138,6 +205,8 @@
 
 		        var selecionadoFalso = false;
 
+		        var tempoPermanenciaHoras = null;
+
 				// Popup dos Markers
 				var infoWindow = null;
 
@@ -165,7 +234,8 @@
 			    		id: '',
 			    		lat: '',
 			    		lng: '',
-			    		dataHora: '',
+			    		data: '',
+			    		hora: '',
 			    		nomePessoa: '',
 			    		telefonePessoa: '',
 			    		status: '',
@@ -196,9 +266,27 @@
 
 					var baseLayers = {"osMap": osMap, "Satellite": osmSatellite};
 
-					mapa = L.map('map', {layers: [osMap], zoomControl: false}).setView([-20.277158, -40.303028], 16);
+					mapa = L.map('map', {layers: [osMap], zoomControl: false}).setView([-20.277158, -40.303028], 15);
 
 					var control = L.control.layers(baseLayers, null, {position: 'bottomleft'}).addTo(mapa);
+
+					/*var zoomSlider = document.getElementById("zoomRange");
+
+					this.value = mapa.getZoom();
+
+					zoomSlider.oninput = function() {
+
+						mapa.setZoom(this.value);
+
+						this.value = mapa.getZoom();
+
+						//var mapZoomValue = mapa.getZoom();
+
+						console.log("zoom leaflet: " + mapa.getZoom();
+
+						console.log("zoom slider: " + this.value);
+
+					}*/
 
 					markerClusters = L.markerClusterGroup();
 
@@ -367,12 +455,15 @@
 				// Atualiza os Markers no mapa
 		        function updateMaps() 
 		        {
+
 		            var timestamp = new Date().getTime();
+
+		            var tempoPermanenciaHoras = localStorage.getItem("tempo");
 		            
 		            // Recebe um Json
 		            $.get("getMarkers.php", 
 		                { 
-		                    refresh: 1, 
+		                    tempo: tempoPermanenciaHoras, 
 		                    t: timestamp
 
 		                }, 
@@ -386,7 +477,7 @@
 							}
 							else {
 
-								console.log("Json recebido");
+								console.log("Json recebido" + data);
 							}
 
 		                	data = $.parseJSON(data);
@@ -465,8 +556,9 @@
 									    	id: data[i].id,
 									    	lat: data[i].lat,
 									    	lng: data[i].lng,
-									    	dataHora: data[i].dataHora,
-									    	nomePessoa: data[i].nome,
+									    	data: data[i].data,
+									    	hora: data[i].hora,
+									    	nomePessoa: data[i].nomePessoa,
 									    	telefonePessoa: data[i].telefone,
 									    	status: data[i].status,
 									    	loginPessoa: data[i].login
@@ -476,7 +568,7 @@
 										        exclusive    : false,  // if this marker bouncing all others must stop
 										    });
 
-										marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nome, data[i].dataHora, data[i].status));
+										marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nomePessoa, data[i].data, data[i].hora, data[i].status));
 
 		                                //Define que um clique sobre o marcador abrirá a categorização de alertas
 
@@ -504,8 +596,9 @@
 							    	id: data[i].id,
 							    	lat: data[i].lat,
 							    	lng: data[i].lng,
-							    	dataHora: data[i].dataHora,
-							    	nomePessoa: data[i].nome,
+							    	data: data[i].data,
+							    	hora: data[i].hora,
+							    	nomePessoa: data[i].nomePessoa,
 							    	telefonePessoa: data[i].telefone,
 							    	status: data[i].status,
 							    	loginPessoa: data[i].login
@@ -515,7 +608,7 @@
 								        exclusive    : false,  // if this marker bouncing all others must stop
 								    });
 
-								marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nome, data[i].dataHora, data[i].status));
+								marker.addTo(mapa).bindPopup(formatarConteudoInfoWindow(data[i].nomePessoa, data[i].data, data[i].hora ,data[i].status));
 
                                 //Define que um clique sobre o marcador abrirá a categorização de alertas
 
@@ -589,10 +682,9 @@
 		        }
 
 		        // Retorna uma string html com o conteúdo formatado de uma infowindow
-		        function formatarConteudoInfoWindow(nomePessoa, dataHora, status)
+		        function formatarConteudoInfoWindow(nomePessoa, data, hora, status)
 		        { 
-		            //return "<b>"+nomePessoa+"</b><br>"+data+" -"+hora+"<br>"+propriedadesStatus[status].label;
-		            return "<p class = 'popupCenter'> <b>"+ nomePessoa + "</b><br>" + dataHora + "<br>" + propriedadesStatus[status].label + "<p>";
+		            return "<p class = 'popupCenter'> <b>" + nomePessoa + "</b><br>" + data + "<br>" + hora + "<br>" +propriedadesStatus[status].label + "<p>";
 
 		        }
 
@@ -630,7 +722,7 @@
 		            }
 		        }
 
-				// Executa o áudio de alerta
+				// Executa o bounce do alerta
 		        function playAlert(marker)
 		        {
 		        	marker.bounce(10);
@@ -655,7 +747,7 @@
 
 		        		if (markersArray[i].options.status != status && markersArray[i].options.status != 0){
 
-							markersArray[i].addTo(mapa).bindPopup(formatarConteudoInfoWindow(markersArray[i].options.nomePessoa, markersArray[i].options.dataHora, markersArray[i].options.status));
+							markersArray[i].addTo(mapa).bindPopup(formatarConteudoInfoWindow(markersArray[i].options.nomePessoa, markersArray[i].options.data, markersArray[i].options.hora, markersArray[i].options.status));
 
 	                        //Define que um clique sobre o marcador abrirá a categorização de alertas
 
@@ -708,120 +800,11 @@
 		                    }
 		                }
 		            );
-		        }		        
+		        }
 
 				inicializarMapa();	
 
-			</script>
-
-<!--			<div id="modalConfiguracoesSistema" class="fade modal" role="dialog" tabindex="-1">
-				<div class="modal-dialog modal-lg">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-							<b>Configurações</b>
-						</div>		
-						<div class="modal-body">
-							<form id="formConfiguracao" action="/web/index.php" method="get">
-								<input type="hidden" name="r" value="configuracao/update-configuracao">
-								<div class='row'>
-									<div class='col-md-6'>
-										<div class="form-group field-configuracao-tempoesperaparanovoalerta required">
-											<label class="control-label" for="configuracao-tempoesperaparanovoalerta">Tempo de Espera para um novo Alerta</label>
-											<input type="time" id="configuracao-tempoesperaparanovoalerta" class="form-control" name="tempoEsperaParaNovoAlerta" value="00:01:00" step="1">
-											<div class="help-block"></div>
-										</div>
-										<p> Tempo mínimo que um usuário deverá aguardar se quiser emitir um outro alerta (no caso de ele já haver emitido um).</p>
-									</div>
-									<div class='col-md-6'>
-										<div class="form-group field-configuracao-toleranciaalertasfalsos required">
-											<label class="control-label" for="configuracao-toleranciaalertasfalsos">Tolerância de Alertas Falsos</label>
-											<input type="number" id="configuracao-toleranciaalertasfalsos" class="form-control" name="toleranciaAlertasFalsos" value="1" min="0">
-											<div class="help-block"></div>
-										</div>
-										<p> Quantidade máxima de Alertas falsos permitida por usuário. Se esta quantidade for ultrapassada, o usuário será bloqueado.</p>
-									</div>
-								</div>
-								<div class='row'> 
-									<hr>
-								</div>
-								<div class='row'>
-									<div class='col-md-12'>
-										<button type="submit" class="btn btn-primary">Salvar</button>
-										<a class="btn btn-danger" href="/web/index.php?r=configuracao%2Frestaurar-configuracao" style="margin-left:15px;">Restaurar Configurações Originais</a>
-									</div>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div id="modalConfiguracoesUsuario" class="fade modal" role="dialog" tabindex="-1">
-				<div class="modal-dialog ">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-							<b>Minhas Preferências</b>
-						</div>
-						<div class="modal-body">
-							<form id="formConfiguracaoUsuario" action="/web/index.php" method="get">
-								<input type="hidden" name="r" value="usuario/update-configuracao">
-								<div class='row'>
-									<div class='col-md-8'>
-										<div class="form-group field-usuario-tempopermanenciamarcadores required">
-											<label class="control-label" for="usuario-tempopermanenciamarcadores">Tempo de Permanência dos Marcadores no Mapa</label>
-											<input type="number" id="usuario-tempopermanenciamarcadores" class="form-control" name="tempoPermanenciaMarcadores" value="1000">
-
-											<div class="help-block"> </div>
-										</div>
-										<p> A partir do momento em que um alerta for gerado, este será o tempo <code>(em horas)</code> em que o mesmo permanecerá visível no mapa.</p>
-									</div>
-									<div class='col-md-4'>
-										<label>Zoom do Mapa</label>
-										<input form ='formConfiguracaoUsuario' id='inputZoomMapa' name='zoomMapa' type='range' min='0' max='20' value='16'>
-										<p id='labelZoomMapa' style='text-align:center;'>16</p>
-									</div>
-								</div>
-								<div class='row'>
-									<hr>
-								</div>
-								<div class='row'>
-									<div class='col-md-6'>
-										<div class="form-group field-usuario-janelaalertas required">
-
-											<input type="hidden" name="janelaAlertas" value="0"><label><input type="checkbox" id="usuario-janelaalertas" name="janelaAlertas" value="1" checked> Exibir janela de alertas</label>
-
-											<div class="help-block"></div>
-										</div>
-									</div>
-									<div class='col-md-6'>
-										<div class="form-group field-usuario-exibiralertasatendidos required">
-
-											<input type="hidden" name="exibirAlertasAtendidos" value="0">
-											<label>
-												<input type="checkbox" id="usuario-exibiralertasatendidos" name="exibirAlertasAtendidos" value="1" checked> Exibir alertas atendidos
-											</label>
-
-											<div class="help-block"></div>
-										</div>
-									</div>
-								</div>
-
-								<div class='row'>
-									<hr>
-								</div>
-								<div class='row'>
-									<div class='col-md-12'>
-										<button type="submit" class="btn btn-primary">Salvar </button>
-										<a class="btn btn-danger" href="/web/index.php?r=usuario%2Frestaurar-configuracao" style="margin-left:15px;">Restaurar Configurações Originais</a>
-									</div>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>-->			
+			</script>			
 		</div>		
 	</body>
 </html>
